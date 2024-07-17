@@ -8,13 +8,15 @@ app.secret_key = 'many random bytes'
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'M@tech@pp1234'
-app.config['MYSQL_DB'] = 'crud'
+app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_DB'] = 'aramco'
 
 mysql = MySQL(app)
 
+
 @app.route('/')
 def Index():
+    print("hi")
     cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM students")
     data = cur.fetchall()
@@ -65,4 +67,4 @@ def update():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='192.168.0.71', port=5000,debug=True)
