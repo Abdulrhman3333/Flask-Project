@@ -28,16 +28,16 @@ def Index():
 def insert():
     if request.method == "POST":
         flash("Data Inserted Successfully")
-        div = request.form['div']
+        division = request.form['division']
         tech = request.form['tech']
         dep = request.form['dep']
         site = request.form['site']
         month = request.form['month']
         year = request.form['year']
         cur = mysql.connection.cursor()
-        # cur.execute("INSERT INTO rdc (date, div, tech,dep, site, month, year, is_checked) VALUES (NOW(), '%s', '%s', '%s', '%s', '%s', '%s','no')", (div, tech, dep, site, month, year))
-        # cur.execute(''' INSERT INTO rdc VALUES(%s,%s) ''',(div,tech))
-        cur.execute(''' INSERT INTO rdc VALUES(Null,NOW(),%s,%s,%s,%s,%s,%s,"no") ''',(div,tech,dep,site,month,year))
+        # cur.execute("INSERT INTO rdc (date, division, tech,dep, site, month, year, is_checked) VALUES (NOW(), '%s', '%s', '%s', '%s', '%s', '%s','no')", (division, tech, dep, site, month, year))
+        # cur.execute(''' INSERT INTO rdc VALUES(%s,%s) ''',(division,tech))
+        cur.execute(''' INSERT INTO rdc VALUES(Null,NOW(),%s,%s,%s,%s,%s,%s,"no") ''',(division,tech,dep,site,month,year))
 
         mysql.connection.commit()
         return redirect(url_for('Index'))
@@ -57,7 +57,7 @@ def update():
     if request.method == 'POST':
         id_data = request.form['id']
         date = request.form['date']
-        div = request.form['div']
+        division = request.form['division']
         tech = request.form['tech']
         dep = request.form['dep']
         month = request.form['month']
@@ -66,10 +66,9 @@ def update():
         
 
         cur = mysql.connection.cursor()
-        cur.execute('''UPDATE rdc SET div=%s
-                    WHERE id=%s ''', (div,id_data))
-        # cur.execute('''UPDATE rdc SET date=%s, div=%s,tech=%s, dep=%s, site=%s,month=%s, year=%s, is_checked=%s 
-        #             WHERE id=%s ''', (date,div,tech,dep,site,month,year,is_checked,id_data))
+        cur.execute("UPDATE rdc SET tech='fgdgfdg'")
+        # cur.execute('''UPDATE rdc SET date=%s, division=%s,tech=%s, dep=%s, site=%s,month=%s, year=%s, is_checked=%s 
+        #             WHERE id=%s ''', (date,division,tech,dep,site,month,year,is_checked,id_data))
         flash("Data Updated Successfully")
         return redirect(url_for('Index'))
 
