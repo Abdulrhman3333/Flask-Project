@@ -63,7 +63,7 @@ def update():
         month = request.form['month']
         year = request.form['year']
         is_checked = request.form['is_checked']
-        hfjkshdkjfh
+        
 
         cur = mysql.connection.cursor()
         cur.execute('''UPDATE rdc SET div=%s
