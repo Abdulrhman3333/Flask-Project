@@ -16,24 +16,29 @@ mysql = MySQL(app)
 
 @app.route('/')
 def Index():
-    print("hi")
     cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM students")
+    cur.execute("SELECT * FROM rdc")
     data = cur.fetchall()
     cur.close()
 
-    return render_template('index.html', students=data)
+    return render_template('index.html', rdcData=data)
 
 
 @app.route('/insert', methods = ['POST'])
 def insert():
     if request.method == "POST":
         flash("Data Inserted Successfully")
-        name = request.form['name']
-        email = request.form['email']
-        phone = request.form['phone']
+        div = request.form['div']
+        tech = request.form['tech']
+        dep = request.form['dep']
+        site = request.form['site']
+        month = request.form['month']
+        year = request.form['year']
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO students (name, email, phone) VALUES (%s, %s, %s)", (name, email, phone))
+        # cur.execute("INSERT INTO rdc (date, div, tech,dep, site, month, year, is_checked) VALUES (NOW(), '%s', '%s', '%s', '%s', '%s', '%s','no')", (div, tech, dep, site, month, year))
+        # cur.execute(''' INSERT INTO rdc VALUES(%s,%s) ''',(div,tech))
+        cur.execute(''' INSERT INTO rdc VALUES(Null,NOW(),%s,%s,%s,%s,%s,%s,"no") ''',(div,tech,dep,site,month,year))
+
         mysql.connection.commit()
         return redirect(url_for('Index'))
 
@@ -41,7 +46,7 @@ def insert():
 def delete(id_data):
     flash("Record Has Been Deleted Successfully")
     cur = mysql.connection.cursor()
-    cur.execute("DELETE FROM students WHERE id=%s", (id_data,))
+    cur.execute("DELETE FROM rdc WHERE id=%s", (id_data,))
     mysql.connection.commit()
     return redirect(url_for('Index'))
 
@@ -57,7 +62,7 @@ def update():
 
         cur = mysql.connection.cursor()
         cur.execute("""
-        UPDATE students SET name=%s, email=%s, phone=%s
+        UPDATE rdc SET name=%s, email=%s, phone=%s
         WHERE id=%s
         """, (name, email, phone, id_data))
         flash("Data Updated Successfully")
@@ -67,4 +72,4 @@ def update():
 
 
 if __name__ == "__main__":
-    app.run(host='192.168.0.71', port=5000,debug=True)
+    app.run(host='localhost', port=5000,debug=True)
