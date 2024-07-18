@@ -60,16 +60,20 @@ def update():
         division = request.form['division']
         tech = request.form['tech']
         dep = request.form['dep']
+        site = request.form['site']
         month = request.form['month']
         year = request.form['year']
         is_checked = request.form['is_checked']
         
 
         cur = mysql.connection.cursor()
-        cur.execute("UPDATE rdc SET tech='fgdgfdg'")
-        # cur.execute('''UPDATE rdc SET date=%s, division=%s,tech=%s, dep=%s, site=%s,month=%s, year=%s, is_checked=%s 
-        #             WHERE id=%s ''', (date,division,tech,dep,site,month,year,is_checked,id_data))
+        cur.execute("""UPDATE rdc SET month=(%s)""", [month])
+        # cur.execute("""UPDATE rdc SET month={}""".format(month))
+        # cur.execute('''UPDATE rdc SET date=%s, division=%s, dep=%s, site=%s,month=%s, year=%s, is_checked=%s 
+        #             WHERE id=%s ''', (date,division,dep,site,month,year,is_checked,id_data))
+        print(month)
         flash("Data Updated Successfully")
+        # return redirect(url_for('Index'))
         return redirect(url_for('Index'))
 
 
