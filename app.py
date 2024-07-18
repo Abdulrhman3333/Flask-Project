@@ -56,15 +56,18 @@ def delete(id_data):
 def update():
     if request.method == 'POST':
         id_data = request.form['id']
-        name = request.form['name']
-        email = request.form['email']
-        phone = request.form['phone']
+        date = request.form['date']
+        div = request.form['div']
+        tech = request.form['tech']
+        dep = request.form['dep']
+        site = request.form['site']
+        month = request.form['month']
+        year = request.form['year']
+        is_checked = request.form['is_checked']
 
         cur = mysql.connection.cursor()
-        cur.execute("""
-        UPDATE rdc SET name=%s, email=%s, phone=%s
-        WHERE id=%s
-        """, (name, email, phone, id_data))
+        cur.execute('''UPDATE rdc SET date=%s, div=%s,tech=%s, dep=%s, site=%s,month=%s, year=%s, is_checked=%s 
+                    WHERE id=%s ''', (date,div,tech,dep,site,month,year,is_checked,id_data))
         flash("Data Updated Successfully")
         return redirect(url_for('Index'))
 
