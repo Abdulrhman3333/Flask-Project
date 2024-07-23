@@ -24,32 +24,78 @@ def Index():
     return render_template('index.html', rdcData=data)
 
 
+
+
+@app.route('/submit', methods = ['POST'])
+def submit():
+    if request.method == "POST":
+        data = request.form
+
+        arrOb = []
+        ob = {
+            'div': data.get('div'),
+            'tech': "",
+            'dep': "",
+            'site': "",
+            'month': data.get('MonthRow1'),
+        }
+
+        for i in range(1, 15):
+            for dep, dv in data.items():
+                if dep == "Number of Deployments{}".format(i):
+                    ob['dep'] = dv
+                    for site, sv in data.items():
+                        if site == "Sites{}".format(i):
+                            ob['site'] = sv
+                            for tech, tv in data.items():
+                                if tech == "Technology{}".format(i):
+                                    ob['tech'] = tv
+                                    break
+            arrOb.append(ob)
+            ob = {
+                'div': data.get('div'),
+                'tech': "",
+                'dep': "",
+                'site': "",
+                'month': data.get('MonthRow1'),
+            }
+
+        filtered_data = [entry for entry in arrOb if entry['tech'] != '']
+
+        cursor = mysql.connection.cursor()
+        for i in filtered_data:
+            div = i['div']
+            tech = i['tech']
+            dep = i['dep']
+            site = i['site']
+            month = i['month']
+            
+            cursor.execute(''' INSERT INTO rdc VALUES(null,NOW(),%s,%s,%s,%s,%s,"2024","no") ''',(div,tech,dep,site,month))
+        mysql.connection.commit()
+        cursor.close()
+        flash("Data Inserted Successfully")
+        return redirect(url_for('Index'))
+    
 @app.route('/insert', methods = ['POST'])
 def insert():
     if request.method == "POST":
-        flash("Data Inserted Successfully")
-        # division = request.form['division']
-        # tech = request.form['tech']
-        # dep = request.form['dep']
-        # site = request.form['site']
-        # month = request.form['month']
-        # year = request.form['year']
+        print("Header info: ", request.headers['Content-Type'])
 
-        id_data = request.get_json()['id']
-        # date = request.get_json()['date']
-        division = request.get_json()['division']
-        tech = request.get_json()['tech']
-        dep = request.get_json()['dep']
-        site = request.get_json()['site']
-        month = request.get_json()['month']
-        year = request.get_json()['year']
-        is_checked = request.get_json()['is_checked']
-        cur = mysql.connection.cursor()
-        # cur.execute("INSERT INTO rdc (date, division, tech,dep, site, month, year, is_checked) VALUES (NOW(), '%s', '%s', '%s', '%s', '%s', '%s','no')", (division, tech, dep, site, month, year))
-        # cur.execute(''' INSERT INTO rdc VALUES(%s,%s) ''',(division,tech))
-        cur.execute(''' INSERT INTO rdc VALUES(%s,NOW(),%s,%s,%s,%s,%s,%s,"no") ''',(id_data,division,tech,dep,site,month,year))
+        # id_data  = request.form['id']
+        # date = request.form['date']
+        division = request.form['division']
+        tech = request.form['tech']
+        dep = request.form['dep']
+        site = request.form['site']
+        month = request.form['month']
+        year = request.form['year']
+        # is_checked = request.form['is_checked']
 
+        cursor = mysql.connection.cursor()
+        cursor.execute(''' INSERT INTO rdc VALUES(null,NOW(),%s,%s,%s,%s,%s,"2024","no") ''',(division,tech,dep,site,month))
         mysql.connection.commit()
+        cursor.close()
+        flash("Data Inserted Successfully")
         return redirect(url_for('Index'))
 
 @app.route('/delete/<string:id_data>', methods = ['GET'])
