@@ -81,7 +81,7 @@ def submit():
             site = i['site']
             month = i['month']
             
-            cursor.execute(''' INSERT INTO rdc VALUES(null,NOW(),%s,%s,%s,%s,%s,YEAR(),"no") ''',(div,tech,dep,site,month))
+            cursor.execute(''' INSERT INTO rdc VALUES(null,NOW(),%s,%s,%s,%s,%s,YEAR(CURRENT_DATE()),"no",0,0) ''',(div,tech,dep,site,month))
         mysql.connection.commit()
         cursor.close()
         flash("Data Inserted Successfully")
@@ -90,20 +90,17 @@ def submit():
 @app.route('/insert', methods = ['POST'])
 def insert():
     if request.method == "POST":
-        print("Header info: ", request.headers['Content-Type'])
-
-        # id_data  = request.form['id']
-        # date = request.form['date']
         division = request.form['division']
         tech = request.form['tech']
         dep = request.form['dep']
         site = request.form['site']
         month = request.form['month']
         year = request.form['year']
-        # is_checked = request.form['is_checked']
+        value = request.form['value']
+        tpv = int(dep) * int(value)
 
         cursor = mysql.connection.cursor()
-        cursor.execute(''' INSERT INTO rdc VALUES(null,NOW(),%s,%s,%s,%s,%s,"2024","no") ''',(division,tech,dep,site,month))
+        cursor.execute(''' INSERT INTO rdc VALUES(null,NOW(),%s,%s,%s,%s,%s,%s,"no",%s,%s) ''',(division,tech,dep,site,month,year,value,tpv))
         mysql.connection.commit()
         cursor.close()
         flash("Data Inserted Successfully")
