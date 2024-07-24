@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechSky</title>
+    <title>Aramco R&DC</title>
 
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
@@ -34,7 +34,9 @@
 {%endwith%}
 
 
-
+<a href="{{ url_for('checking')}}">
+    <button type="submit" class="btn btn-primary mb-2">checking page</button>
+</a>
     <!-- Enter New Student Modal -->
     <div id="myModal" class="modal fade" role="dialog">
         <div class="modal-dialog">
@@ -79,6 +81,11 @@
                             <input name="year" type="text" class="form-control" id="exampleFormControlInput1" placeholder="Enter year">
                           </div>
 
+                        <div class="form-group">
+                            <label>value</label>
+                            <input name="value" type="text" class="form-control" id="exampleFormControlInput1" placeholder="Enter year">
+                          </div>
+
                           <button type="submit" class="btn btn-primary mb-2">Save</button>
                      
                       </form>
@@ -108,6 +115,8 @@
             <th scope="col">month</th>
             <th scope="col">year</th>
             <th scope="col">is_checked</th>
+            <th scope="col">value</th>
+            <th scope="col">tpv</th>
         </tr>
     </thead>
     <tbody>
@@ -122,6 +131,8 @@
         <td>{{row.6}}</td>
         <td>{{row.7}}</td>
         <td>{{row.8}}</td>
+        <td>{{row.9}}</td>
+        <td>{{row.10}}</td>
         <td>
             <a href="/update/{{row.0}}" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modaledit{{row.0}}">Edit</a>
             <a href="/delete/{{ row.0 }}" onclick="return confirm('Are Sure Want To Deleted ?')" class="btn btn-danger btn-sm">Delete</a>
@@ -190,6 +201,11 @@
                               <div class="form-group">
                                 <label>is_checked</label>
                                 <input value="{{row.8}}" type="text" name="is_checked" class="form-control" id="exampleFormControlInput1" placeholder="Enter is_checked">
+                            </div>
+
+                              <div class="form-group">
+                                <label>value</label>
+                                <input value="{{row.9}}" type="text" name="value" class="form-control" id="exampleFormControlInput1" placeholder="Enter value">
                             </div>
     
                               <button type="submit" class="btn btn-success mb-2">Update</button>

@@ -26,6 +26,17 @@ def Index():
 
 
 
+@app.route('/checking')
+def checking():
+    # if request.method == "POST":
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM rdc")
+    data = cur.fetchall()
+    cur.close()
+
+    return render_template('checking.html', rdcData=data)
+
+
 @app.route('/submit', methods = ['POST'])
 def submit():
     if request.method == "POST":
@@ -70,7 +81,7 @@ def submit():
             site = i['site']
             month = i['month']
             
-            cursor.execute(''' INSERT INTO rdc VALUES(null,NOW(),%s,%s,%s,%s,%s,"2024","no") ''',(div,tech,dep,site,month))
+            cursor.execute(''' INSERT INTO rdc VALUES(null,NOW(),%s,%s,%s,%s,%s,YEAR(),"no") ''',(div,tech,dep,site,month))
         mysql.connection.commit()
         cursor.close()
         flash("Data Inserted Successfully")
@@ -106,6 +117,27 @@ def delete(id_data):
     mysql.connection.commit()
     return redirect(url_for('Index'))
 
+@app.route('/checking/accept/<string:id_data>', methods = ['GET'])
+def accept(id_data):
+    cur = mysql.connection.cursor()
+    cur.execute("UPDATE rdc SET `is_checked`='yes' WHERE id = %s",[id_data])
+    flash("Record Has Been accepted Successfully")
+    mysql.connection.commit()
+    return redirect(url_for('checking'))
+
+# @app.route('/checking/reject/<string:id_data>', methods = ['GET'])
+# def accept(id_data):
+#     cur = mysql.connection.cursor()
+#     cur.execute("SELECT * FROM rdc WHERE id = %s",[id_data])
+#     data = cur.fetchall()
+#     division = data.get('division')
+#     cur.execute(''' INSERT INTO rejected VALUES(null,NOW(),%s,%s,%s,%s,%s,"2024","no") ''',(division,tech,dep,site,month))
+#     cur.close()
+
+#     flash("Record Has Been accepted Successfully")
+#     mysql.connection.commit()
+#     return redirect(url_for('checking'))
+
 
 
 @app.route('/update', methods= ['POST', 'GET'])
@@ -132,6 +164,8 @@ def update():
         month = request.form['month']
         year = request.form['year']
         is_checked = request.form['is_checked']
+        value = request.form['value']
+        tpv = int(dep) * int(value)
         
 
         cur = mysql.connection.cursor()
@@ -139,11 +173,11 @@ def update():
         # cur.execute("""UPDATE rdc SET month={}""".format(month))
         try:
             # cur.execute("UPDATE rdc SET dep=%s, site=%s WHERE id=%s", (dep,site,id_data))
-            cur.execute("""UPDATE rdc SET division=%s,tech=%s, dep=%s, site=%s,month=%s, year=%s, is_checked=%s 
-                    WHERE id=%s """, (division,tech,dep,site,month,year,is_checked,id_data))
+            cur.execute("""UPDATE rdc SET division=%s,tech=%s, dep=%s, site=%s,month=%s, year=%s, is_checked=%s , value=%s, tpv=%s  
+                    WHERE id=%s """, (division,tech,dep,site,month,year,is_checked,value,tpv,id_data))
             mysql.connection.commit()
         except:
-            print("eroooorrrrr rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+            print("error")
 
         return redirect(url_for('Index'))
 

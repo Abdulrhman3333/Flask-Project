@@ -33,68 +33,9 @@
 {%endif%}
 {%endwith%}
 
-
-
-    <!-- Enter New Student Modal -->
-    <div id="myModal" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-   
-                <div class="modal-header">
-                    <h5 class="modal-title text-primary" style="align-content: center;">Please Add New data</h5>    
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  
-
-                <div class="modal-body">
-                    
-                    <form action="{{ url_for('insert')}}" method="POST">
-                        <div class="form-group">
-                          <label>division</label>
-                          <input type="text" name="division" class="form-control" id="exampleFormControlInput1" placeholder="Enter division">
-                        </div>
-
-                        <div class="form-group">
-                            <label>tech</label>
-                            <input type="text" name="tech" class="form-control" id="exampleFormControlInput1" placeholder="Enter tech">
-                        </div>
-
-                        <div class="form-group">
-                            <label>dep</label>
-                            <input name="dep" type="text" class="form-control" id="exampleFormControlInput1" placeholder="Enter dep">
-                          </div>
-                          <label>site</label>
-                          <input type="text" name="site" class="form-control" id="exampleFormControlInput1" placeholder="Enter site">
-                        </div>
-
-                        <div class="form-group">
-                            <label>month</label>
-                            <input type="text" name="month" class="form-control" id="exampleFormControlInput1" placeholder="Enter month">
-                        </div>
-
-                        <div class="form-group">
-                            <label>year</label>
-                            <input name="year" type="text" class="form-control" id="exampleFormControlInput1" placeholder="Enter year">
-                          </div>
-
-                          <button type="submit" class="btn btn-primary mb-2">Save</button>
-                     
-                      </form>
-
-
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-
-    <!-- End of Enter New Student Modal -->
-
-
-
+<a href="{{ url_for('Index')}}">
+    <button type="submit" class="btn btn-primary mb-2">index page</button>
+</a>
 
 <table class="table table-hover">
     <thead>
@@ -107,11 +48,14 @@
             <th scope="col">site</th>
             <th scope="col">month</th>
             <th scope="col">year</th>
-            <th scope="col">is_checked</th>
+            <th scope="col">checking</th>
+            <th scope="col">value</th>
+            <th scope="col">tpv</th>
         </tr>
     </thead>
     <tbody>
         {% for row in rdcData %}
+        {% if row.8 == "no" %}
         <tr>
         <td>{{row.0}}</td>
         <td>{{row.1}}</td>
@@ -122,93 +66,21 @@
         <td>{{row.6}}</td>
         <td>{{row.7}}</td>
         <td>{{row.8}}</td>
+        <td>{{row.9}}</td>
+        <td>{{row.10}}</td>
         <td>
-            <a href="/update/{{row.0}}" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modaledit{{row.0}}">Edit</a>
-            <a href="/delete/{{ row.0 }}" onclick="return confirm('Are Sure Want To Deleted ?')" class="btn btn-danger btn-sm">Delete</a>
+            <!-- <a href="/accept/{{row.0}}" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modaledit{{row.0}}">accept</a> -->
+            <a href="/checking/accept/{{row.0}}" class="btn btn-warning btn-sm" >accept</a>
+            <a href="/reject/{{ row.0 }}" onclick="return confirm('Are Sure Want To reject ?')" class="btn btn-danger btn-sm">reject</a>
 
         </td>
     </tr>
 
 
-        <!-- Enter New Student Modal -->
-        <div id="modaledit{{row.0}}" class="modal fade" role="dialog">
-            <div class="modal-dialog">
-                <div class="modal-content">
-       
-                    <div class="modal-header">
-                        <h5 class="modal-title text-primary" style="align-content: center;">Update Details</h5>    
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
-                      </div>
-                      
-    
-                    <div class="modal-body">
-                        
-                        <form action="{{ url_for('update')}}" method="POST">
-                            <input type="hidden" name="id" value="{{row.0}}">
-                            <div class="form-group">
-                              <label>id</label>
-                              <input value="{{row.0}}" type="text" name="id" class="form-control" id="exampleFormControlInput1" placeholder="Enter id">
-                            </div>
-    
-                            <div class="form-group">
-                                <label>date</label>
-                                <input value="{{row.1}}" type="text" name="date" class="form-control" id="exampleFormControlInput1" placeholder="Enter date">
-                            </div>
-    
-                            <div class="form-group">
-                                <label>division</label>
-                                <input value="{{row.2}}" name="division" type="text" class="form-control" id="exampleFormControlInput1" placeholder="Enter division">
-                              </div>
-
-                              <div class="form-group">
-                                <label>tech</label>
-                                <input value="{{row.3}}" type="text" name="tech" class="form-control" id="exampleFormControlInput1" placeholder="Enter tech">
-                            </div>
-
-                              <div class="form-group">
-                                <label>dep</label>
-                                <input value="{{row.4}}" type="text" name="dep" class="form-control" id="exampleFormControlInput1" placeholder="Enter dep">
-                            </div>
-
-                              <div class="form-group">
-                                <label>site</label>
-                                <input value="{{row.5}}" type="text" name="site" class="form-control" id="exampleFormControlInput1" placeholder="Enter site">
-                            </div>
-
-                              <div class="form-group">
-                                <label>month</label>
-                                <input value="{{row.6}}" type="text" name="month" class="form-control" id="exampleFormControlInput1" placeholder="Enter month">
-                            </div>
-
-                              <div class="form-group">
-                                <label>year</label>
-                                <input value="{{row.7}}" type="text" name="year" class="form-control" id="exampleFormControlInput1" placeholder="Enter year">
-                            </div>
-
-                              <div class="form-group">
-                                <label>is_checked</label>
-                                <input value="{{row.8}}" type="text" name="is_checked" class="form-control" id="exampleFormControlInput1" placeholder="Enter is_checked">
-                            </div>
-    
-                              <button type="submit" class="btn btn-success mb-2">Update</button>
-                         
-                          </form>
-    
-    
-                    </div>
-                </div>
-            </div>
-    
-        </div>
-    
-    
-        <!-- End of Edit Student Modal -->
 
 
 
-
+        {%endif%}
         {% endfor %}
     </tbody>
 
