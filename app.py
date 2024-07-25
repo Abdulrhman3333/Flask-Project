@@ -3,182 +3,69 @@ from werkzeug.utils import redirect
 from flask_mysqldb import MySQL
 
 
-app = Flask(__name__)
-app.secret_key = 'many random bytes'
 
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'aramco'
+####################################################################
+####################################################################
 
-mysql = MySQL(app)
+import pypyodbc
+import pandas as pd
+from datetime import datetime
 
-
-@app.route('/')
-def Index():
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM rdc")
-    data = cur.fetchall()
-    cur.close()
-
-    return render_template('index.html', rdcData=data)
-
-
-
-
-@app.route('/checking')
-def checking():
-    # if request.method == "POST":
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM rdc")
-    data = cur.fetchall()
-    cur.close()
-
-    return render_template('checking.html', rdcData=data)
-
-
-@app.route('/submit', methods = ['POST'])
-def submit():
-    if request.method == "POST":
-        data = request.form
-
-        arrOb = []
-        ob = {
-            'div': data.get('div'),
-            'tech': "",
-            'dep': "",
-            'site': "",
-            'month': data.get('MonthRow1'),
-        }
-
-        for i in range(1, 15):
-            for dep, dv in data.items():
-                if dep == "Number of Deployments{}".format(i):
-                    ob['dep'] = dv
-                    for site, sv in data.items():
-                        if site == "Sites{}".format(i):
-                            ob['site'] = sv
-                            for tech, tv in data.items():
-                                if tech == "Technology{}".format(i):
-                                    ob['tech'] = tv
-                                    break
-            arrOb.append(ob)
-            ob = {
-                'div': data.get('div'),
-                'tech': "",
-                'dep': "",
-                'site': "",
-                'month': data.get('MonthRow1'),
-            }
-
-        filtered_data = [entry for entry in arrOb if entry['tech'] != '']
-
-        cursor = mysql.connection.cursor()
-        for i in filtered_data:
-            div = i['div']
-            tech = i['tech']
-            dep = i['dep']
-            site = i['site']
-            month = i['month']
-            
-            cursor.execute(''' INSERT INTO rdc VALUES(null,NOW(),%s,%s,%s,%s,%s,YEAR(CURRENT_DATE()),"no",0,0) ''',(div,tech,dep,site,month))
-        mysql.connection.commit()
-        cursor.close()
-        flash("Data Inserted Successfully")
-        return redirect(url_for('Index'))
-    
-@app.route('/insert', methods = ['POST'])
-def insert():
-    if request.method == "POST":
-        division = request.form['division']
-        tech = request.form['tech']
-        dep = request.form['dep']
-        site = request.form['site']
-        month = request.form['month']
-        year = request.form['year']
-        value = request.form['value']
-        tpv = int(dep) * int(value)
-
-        cursor = mysql.connection.cursor()
-        cursor.execute(''' INSERT INTO rdc VALUES(null,NOW(),%s,%s,%s,%s,%s,%s,"no",%s,%s) ''',(division,tech,dep,site,month,year,value,tpv))
-        mysql.connection.commit()
-        cursor.close()
-        flash("Data Inserted Successfully")
-        return redirect(url_for('Index'))
-
-@app.route('/delete/<string:id_data>', methods = ['GET'])
-def delete(id_data):
-    flash("Record Has Been Deleted Successfully")
-    cur = mysql.connection.cursor()
-    cur.execute("DELETE FROM rdc WHERE id=%s", (id_data,))
-    mysql.connection.commit()
-    return redirect(url_for('Index'))
-
-@app.route('/checking/accept/<string:id_data>', methods = ['GET'])
-def accept(id_data):
-    cur = mysql.connection.cursor()
-    cur.execute("UPDATE rdc SET `is_checked`='yes' WHERE id = %s",[id_data])
-    flash("Record Has Been accepted Successfully")
-    mysql.connection.commit()
-    return redirect(url_for('checking'))
-
-# @app.route('/checking/reject/<string:id_data>', methods = ['GET'])
-# def accept(id_data):
-#     cur = mysql.connection.cursor()
-#     cur.execute("SELECT * FROM rdc WHERE id = %s",[id_data])
-#     data = cur.fetchall()
-#     division = data.get('division')
-#     cur.execute(''' INSERT INTO rejected VALUES(null,NOW(),%s,%s,%s,%s,%s,"2024","no") ''',(division,tech,dep,site,month))
-#     cur.close()
-
-#     flash("Record Has Been accepted Successfully")
-#     mysql.connection.commit()
-#     return redirect(url_for('checking'))
-
-
-
-@app.route('/update', methods= ['POST', 'GET'])
-def update():
-    if request.method == 'POST':
-        # print("Header info: ", request.headers['Content-Type'])
-        flash("Data Updated Successfully")
-        # id_data = request.get_json()['id']
-        # # date = request.get_json()['date']
-        # division = request.get_json()['division']
-        # tech = request.get_json()['tech']
-        # dep = request.get_json()['dep']
-        # site = request.get_json()['site']
-        # month = request.get_json()['month']
-        # year = request.get_json()['year']
-        # is_checked = request.get_json()['is_checked']
-        # ===============================================================
-        id_data  = request.form['id']
-        date = request.form['date']
-        division = request.form['division']
-        tech = request.form['tech']
-        dep = request.form['dep']
-        site = request.form['site']
-        month = request.form['month']
-        year = request.form['year']
-        is_checked = request.form['is_checked']
-        value = request.form['value']
-        tpv = int(dep) * int(value)
-        
-
-        cur = mysql.connection.cursor()
-        # cur.execute("""UPDATE rdc SET month=(%s)""", [month])
-        # cur.execute("""UPDATE rdc SET month={}""".format(month))
+def connect_to_db():
+    MAX_ATTEMPTS = 3
+    i = 1
+    while True:
         try:
-            # cur.execute("UPDATE rdc SET dep=%s, site=%s WHERE id=%s", (dep,site,id_data))
-            cur.execute("""UPDATE rdc SET division=%s,tech=%s, dep=%s, site=%s,month=%s, year=%s, is_checked=%s , value=%s, tpv=%s  
-                    WHERE id=%s """, (division,tech,dep,site,month,year,is_checked,value,tpv,id_data))
-            mysql.connection.commit()
-        except:
-            print("error")
+            DRIVER_NAME = 'SQL SERVER'
+            SERVER_NAME = 'LAPTOP-T6NQ8T6P\SQLEXPRESS'
+            DATABASE_NAME = 'aramco'
+            connection_string = r'Driver={ODBC Driver 17 for SQL Server};Server=\LAPTOP-T6NQ8T6P\SQLEXPRESS;Database=aramco;Truested_Connection=Yes;TrustServerCertificate=Yes'
+            conn = pypyodbc.connect(connection_string)
+            return conn
+        except Exception as ex:
+            print(f'Error connection to database in attempt {i}: {ex}')
+            if i >= MAX_ATTEMPTS:
+                raise Exception('Error connecting to database',ex)
+            else:
+                i += 1
 
-        return redirect(url_for('Index'))
+def get_rows(conn, sql, *param):
+    cursor = conn.cursor()
+    rows = cursor.execute(sql, *param).fetchall()
+    cursor.close()
+    return rows
 
+def update_rows(conn, sql, *param):
+    cursor = conn.cursor()
+    cursor.execute(sql, *param)
+    conn.commit()
+    cursor.close()
+def insert_row_and_get_id (conn, sql, *args):
+    cursor = conn.cursor()
+    cursor.execute(f'{sql}; SELECT SCOPE_IDENTITY()', *args)
+    cursor.nextset()
+    rows = cursor.fetchall()
+    row = rows[0]
+    identity = int(row[0])
+    conn.commit()
+    cursor.close()
+    return identity
 
+def get_my_requests (username):
+    conn = connect_to_db()
+    sql = "SELECT RequestId from View_Request where Requester = ?"
+    rows = get_rows(conn, sql, username)
+    conn.close()
+    my_requests = []
+    for request_row in rows:
+        request_id = request_row[0]
+        request
+        get_request_details(request_id)
+        my_requests.append(request)
+    return my_requests
 
-if __name__ == "__main__":
-    app.run(host='localhost', port=5000,debug=True)
+def insert_log(stageid, status_before, status_after, remarks, username):
+    conn = connect_to_db()
+    sql = "INSERT INTO Log (StageId, StatusBefore, StatusAfter, Remarks, LoginId) VALUES (?,?,?,?,?)"
+    log_id= insert_row_and_get_id (conn, sql, stageid, status_before, status_after, remarks, username) conn.close()
+    return log_id

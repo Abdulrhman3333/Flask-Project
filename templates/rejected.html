@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checking</title>
+    <title>TechSky</title>
 
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
@@ -12,13 +12,13 @@
 <body>
     
 <div class="container-fluid">
-<h1 class="text-center alert-primary">Checking page</h1>
+<h1 class="text-center alert alert-danger">Checking page</h1>
         <div class="row">
             <div class="col-sm-2"></div>
 
             <!-- content goes here -->
             <div class="col-sm-8">
-<!-- <h2 > List <button class="btn btn-primary float-right" data-toggle="modal" data-target="#myModal">Add data</button></h2> -->
+<h2 > List <button class="btn btn-primary float-right" data-toggle="modal" data-target="#myModal">Add data</button></h2>
 
 {%with messages = get_flashed_messages()%}
 {%if messages%}
@@ -70,8 +70,7 @@
         <td>{{row.10}}</td>
         <td>
             <!-- <a href="/accept/{{row.0}}" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modaledit{{row.0}}">accept</a> -->
-            <a href="/checking/accept/{{row.0}}" class="btn btn-warning btn-sm" >accept</a>
-            <a href="/checking/reject/{{ row.0 }}" class="btn btn-danger btn-sm">reject</a>
+            <a href="/checking/retrieve/{{row.0}}" class="btn btn-warning btn-sm" >accept</a>
 
         </td>
     </tr>
