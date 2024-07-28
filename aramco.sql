@@ -110,3 +110,19 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+
+CREATE TABLE rdc8 (
+  id int IDENTITY(1, 1),
+  date varchar(50) ,
+  division varchar(15) DEFAULT NULL,
+  tech varchar(70) DEFAULT NULL,
+  dep varchar(10) ,
+  site varchar(10) ,
+  month varchar(10) ,
+  year varchar(10) ,
+  is_checked varchar(10) ,
+  value int ,
+  tpv int 
+)

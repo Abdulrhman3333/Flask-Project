@@ -2,7 +2,7 @@ from werkzeug.utils import redirect
 from flask_mysqldb import MySQL
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file, flash, make_response, Response 
 import secrets,pypyodbc,dbutil
-
+import datetime
 
 
 ####################################################################
@@ -40,30 +40,30 @@ def connect_to_db():
 
 
 app = Flask(__name__)
-secret = secrets.token_urlsafe (32)
+# secret = secrets.token_urlsafe (32)
+secret = "abc"
 
 app.secret_key = secret
-# app.config['MYSQL_HOST'] = 'localhost'
-# app.config['MYSQL_USER'] = 'root'
-# app.config['MYSQL_PASSWORD'] = ''
-# app.config['MYSQL_DB'] = 'aramco'
-
-# mysql = MySQL(app)
 
 # load the main page
 @app.route('/')
 def Index():
     cur = connect_to_db()
-    cur.execute("SELECT * FROM rdc4")
+    cur.execute("SELECT * FROM rdc9")
     data = cur.fetchall()
     cur.close()
     return render_template('index.html', rdcData=data)
+    # return render_template('powerBi.html', rdcData=data)
+
+@app.route('/powerBi')
+def powerBi():
+    return render_template('powerBi.html')
 
 # chacking page to accept and reject requests
 @app.route('/checking')
 def checking():
     cur = connect_to_db()
-    cur.execute("SELECT * FROM rdc4") # rdc4 table which has all the inforamtion
+    cur.execute("SELECT * FROM rdc9") # rdc9 table which has all the inforamtion
     data = cur.fetchall() # get the data from database
     cur.close()
     return render_template('checking.html', rdcData=data) # rdcData will be sent to frontend
@@ -78,8 +78,7 @@ def submit():
             'div': data.get('div'), # division name
             'tech': "", # technology name
             'dep': "", # number of deployments
-            'site': "", # site where take place
-            'month': data.get('MonthRow1'), # month name
+            'site': "" # site where take place
         }
 
         # for each row ( 15 rows ) get the exact value and combine it in one object
@@ -94,26 +93,27 @@ def submit():
                                 if tech == "Technology{}".format(i):
                                     ob['tech'] = tv
                                     break
-            arrOb.append(ob) # add to the array
-            ob = {
+            arrOb.append(ob) # add the object to the array
+            ob = { # clear the object to get new values
                 'div': data.get('div'),
                 'tech': "",
                 'dep': "",
-                'site': "",
-                'month': data.get('MonthRow1'), # MonthRow1 is the field name in the pdf file
+                'site': ""
             }
 
         filtered_data = [entry for entry in arrOb if entry['tech'] != ''] # remove all objects the have no dep number from the array
 
         cur = connect_to_db() # connect to db
         for i in filtered_data:
-            div = i['div']
+            division = i['div']
             tech = i['tech']
             dep = i['dep']
             site = i['site']
-            month = i['month']
-            cur.execute(''' INSERT INTO rdc4 VALUES(0,0,?,?,?,?,?,0,0,0,0) ''',(div,tech,dep,site,month)) 
-        # mysql.connection.commit()
+            month = datetime.datetime.now().month
+            year = datetime.datetime.now().year
+            current_date = datetime.datetime.now()
+            cur.execute('INSERT INTO aramco.dbo.rdc9 (date,division,tech,dep,site,month,year,is_checked,value,tpv) VALUES(?,?,?,?,?,?,?,?,?,?)',
+            (current_date,division,tech,dep,site,month,year,'no',0,0)) 
         cur.commit()    
         cur.close()
         flash("Data Inserted Successfully")
@@ -122,6 +122,7 @@ def submit():
 @app.route('/insert', methods = ['POST']) # this insert which come from the website 
 def insert():
     if request.method == "POST":
+        current_date = datetime.datetime.now()
         division = request.form['division']
         tech = request.form['tech']
         dep = request.form['dep']
@@ -131,8 +132,8 @@ def insert():
         value = request.form['value']   
         tpv = int(dep) * int(value)
         cur = connect_to_db()
-        cur.execute(''' INSERT INTO rdc4 VALUES(0,0,?,?,?,?,?,0,0,0,0) ''',(division,tech,dep,site,month)) 
-        # mysql.connection.commit()
+        cur.execute('INSERT INTO aramco.dbo.rdc9 (date,division,tech,dep,site,month,year,is_checked,value,tpv) VALUES(?,?,?,?,?,?,?,?,?,?)',
+                    (current_date,division,tech,dep,site,month,year,'no',value,tpv)) 
         cur.commit()
         cur.close()
         flash("Data Inserted Successfully")
@@ -142,61 +143,62 @@ def insert():
 def delete(id_data):
     flash("Record Has Been Deleted Successfully")
     cur = connect_to_db()
-    cur.execute("DELETE FROM rdc4 WHERE id=%s", (id_data,))
-    # mysql.connection.commit()
+    cur.execute("DELETE FROM rdc9 WHERE id=?", (id_data,))
+    cur.commit()
+    cur.close()
     return redirect(url_for('Index'))
 
 @app.route('/checking/accept/<string:id_data>', methods = ['GET'])
 def accept(id_data):
     cur = connect_to_db()
-    cur.execute("UPDATE rdc4 SET `is_checked`='yes' WHERE id = %s",[id_data])
+    cur.execute("UPDATE rdc9 SET `is_checked`='yes' WHERE id = ?",[id_data])
+    cur.commit()
+    cur.close()
     flash("Record Has Been accepted Successfully")
-    # mysql.connection.commit()
     return redirect(url_for('checking'))
 
-@app.route('/checking/reject/<string:id_data>', methods = ['GET'])
-def reject(id_data):
-    cur = connect_to_db()
-    cur.execute("SELECT * FROM rdc4 WHERE id = %s",[id_data])
-    data = cur.fetchone()
-    id = data[0]
-    date = data[1]
-    division = data[2]
-    tech = data[3]
-    dep = data[4]
-    site = data[5]
-    month = data[6]
-    year = data[7]
-    is_checked = data[8]
-    value = data[9]
-    tpv = data[10]
-    cur.execute(''' INSERT INTO rejected1 VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ''',(id,date,division,tech,dep,site,month,year,is_checked,value,tpv))
-    cur.execute("DELETE FROM rdc4 WHERE id = %s",(id,))
-    cur.execute("DELETE FROM rdc4 WHERE id =39")
-    cur.close()
+# @app.route('/checking/reject/<string:id_data>', methods = ['GET'])
+# def reject(id_data):
+#     cur = connect_to_db()
+#     cur.execute("SELECT * FROM rdc9 WHERE id = ?",[id_data])
+#     data = cur.fetchone()
+#     id = data[0]
+#     date = data[1]
+#     division = data[2]
+#     tech = data[3]
+#     dep = data[4]
+#     site = data[5]
+#     month = data[6]
+#     year = data[7]
+#     is_checked = data[8]
+#     value = data[9]
+#     tpv = data[10]
+#     cur.execute(''' INSERT INTO rejected1 VALUES(?,?,?,?,?,?,?,?,?,?,?) ''',(id,date,division,tech,dep,site,month,year,is_checked,value,tpv))
+#     cur.execute("DELETE FROM rdc9 WHERE id = ?",(id,))
+#     cur.execute("DELETE FROM rdc9 WHERE id =39")
+#     cur.close()
 
-    flash("Record Has Been accepted Successfully")
-    # mysql.connection.commit()
-    return redirect(url_for('checking'))
+#     flash("Record Has Been accepted Successfully")
+#     # mysql.connection.commit()
+#     return redirect(url_for('checking'))
 
 
-@app.route('/checking/rejected/', methods = ['GET'])
-def rejected():
-    cur = connect_to_db()
-    cur.execute("SELECT * FROM rejected1")
-    data = cur.fetchall()
-    cur.close()
+# @app.route('/checking/rejected/', methods = ['GET'])
+# def rejected():
+#     cur = connect_to_db()
+#     cur.execute("SELECT * FROM rejected1")
+#     data = cur.fetchall()
+#     cur.close()
 
-    return render_template('rejected.html', rdcData=data)
+#     return render_template('rejected.html', rdcData=data)
 
-@app.route('/checking/retrieve/<string:id_data>', methods = ['GET'])
-def retrieve(id_data):
-    cur = connect_to_db()
+# @app.route('/checking/retrieve/<string:id_data>', methods = ['GET'])
+# def retrieve(id_data):
+#     cur = connect_to_db()
 
 @app.route('/update', methods= ['POST', 'GET'])
 def update():
     if request.method == 'POST':
-        flash("Data Updated Successfully")
         id_data  = request.form['id']
         date = request.form['date']
         division = request.form['division']
@@ -211,9 +213,11 @@ def update():
 
         cur = connect_to_db()
         try:
-            cur.execute("""UPDATE rdc4 SET division=%s,tech=%s, dep=%s, site=%s,month=%s, year=%s, is_checked=%s , value=%s, tpv=%s  
-                    WHERE id=%s """, (division,tech,dep,site,month,year,is_checked,value,tpv,id_data))
-            # mysql.connection.commit()
+            cur.execute("""UPDATE aramco.dbo.rdc9 SET division=?,tech=?, dep=?, site=?,month=?, year=?, is_checked=? , value=?, tpv=?  
+                    WHERE id=? """, (division,tech,dep,site,month,year,is_checked,value,tpv,id_data))
+            cur.commit()
+            cur.close()
+            flash("Data Updated Successfully")
         except:
             print("error")
 
