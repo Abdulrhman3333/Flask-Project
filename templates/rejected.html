@@ -4,40 +4,35 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechSky</title>
+    <title>Aramco R&DC</title>
 
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 </head>
 <body>
     
-<div class="container-fluid">
-<h1 class="text-center alert alert-danger">Checking page</h1>
-        <div class="row">
-            <div class="col-sm-2"></div>
+<div class="">
+<h1 class="text-center alert alert-danger p-3 mb-2 bg-info text-white">Restore page</h1>
+        <div class="row" >
+            <div class="col-sm-2" ></div>
 
             <!-- content goes here -->
             <div class="col-sm-8">
-<h2 > List <button class="btn btn-primary float-right" data-toggle="modal" data-target="#myModal">Add data</button></h2>
-
-{%with messages = get_flashed_messages()%}
-{%if messages%}
-{% for message in messages %}
-<div class="alert alert-success alert-dismissable" role="alert">
-    <button type="button" class="close" data-dismiss="alert" aria-label="close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-    {{message}}
+<div class="alert alert-success alert-dismissable" role="alert" style="width: 1250px; display: none; margin: auto; transform: translateX(-115px);">
+    <button type="button" class="close" data-dismiss="alert" aria-label="close"></button>
 </div>
-{%endfor%}
-{%endif%}
-{%endwith%}
+<button style="margin-top: 10px; display: none; transform: translateX(120px);" class="btn btn-primary float-right" data-toggle="modal" data-target="#myModal" >Add data</button>
+
+
 
 <a href="{{ url_for('Index')}}">
-    <button type="submit" class="btn btn-primary mb-2">index page</button>
+    <button type="submit" class="btn btn-primary mb-2" style="margin-top: 10px;transform: translateX(-115px);">Main page</button>
+</a>
+<a href="{{ url_for('intermidiate')}}">
+    <button type="submit" class="btn btn-primary mb-2" style="margin-top: 10px;transform: translateX(-115px);">Intermediate page</button>
 </a>
 
-<table class="table table-hover">
+<table class="table table-hover" style="width: 80%; margin: auto; margin-top: 20px; text-transform: capitalize;">
     <thead>
         <tr>
             <th scope="col">id</th>
@@ -48,14 +43,14 @@
             <th scope="col">site</th>
             <th scope="col">month</th>
             <th scope="col">year</th>
-            <th scope="col">checking</th>
+            <th scope="col">is_checked</th>
             <th scope="col">value</th>
             <th scope="col">tpv</th>
+            <th scope="col">Operations</th>
         </tr>
     </thead>
     <tbody>
         {% for row in rdcData %}
-        {% if row.8 == "no" %}
         <tr>
         <td>{{row.0}}</td>
         <td>{{row.1}}</td>
@@ -69,18 +64,10 @@
         <td>{{row.9}}</td>
         <td>{{row.10}}</td>
         <td>
-            <!-- <a href="/accept/{{row.0}}" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modaledit{{row.0}}">accept</a> -->
-            <a href="/checking/retrieve/{{row.0}}" class="btn btn-warning btn-sm" >accept</a>
-
+            <a href="/intermidiate/rejected/{{row.0}}" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modaledit{{row.0}}">delete</a>
         </td>
-    </tr>
-
-
-
-
-
-        {%endif%}
-        {% endfor %}
+    </tr>   
+    {% endfor %}
     </tbody>
 
 </table>
