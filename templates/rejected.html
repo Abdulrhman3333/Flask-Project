@@ -12,6 +12,8 @@
 <body>
     
 <div class="">
+<a href="/rejected/removeall" class="btn btn-danger btn-sm" onclick="return confirm('Are Sure Want To Deleted all the rejected records forever ?')">remove</a>
+
 <h1 class="text-center alert alert-danger p-3 mb-2 bg-info text-white">Restore page</h1>
         <div class="row" >
             <div class="col-sm-2" ></div>
@@ -28,7 +30,7 @@
 <a href="{{ url_for('Index')}}">
     <button type="submit" class="btn btn-primary mb-2" style="margin-top: 10px;transform: translateX(-115px);">Main page</button>
 </a>
-<a href="{{ url_for('intermidiate')}}">
+<a href="{{ url_for('intermediate')}}">
     <button type="submit" class="btn btn-primary mb-2" style="margin-top: 10px;transform: translateX(-115px);">Intermediate page</button>
 </a>
 
@@ -64,7 +66,8 @@
         <td>{{row.9}}</td>
         <td>{{row.10}}</td>
         <td>
-            <a href="/intermidiate/rejected/{{row.0}}" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modaledit{{row.0}}">delete</a>
+            <a href="/rejected/restore/{{row.0}}" class="btn btn-warning btn-sm" >restore</a>
+            <a href="/rejected/remove/{{row.0}}" onclick="return confirm('Are Sure Want To Delete it forever ?')" class="btn btn-danger btn-sm">remove</a>
         </td>
     </tr>   
     {% endfor %}

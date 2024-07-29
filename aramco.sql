@@ -114,7 +114,7 @@ COMMIT;
 
 
 CREATE TABLE rdc8 (
-  id int IDENTITY(1, 1),
+  id int IDENTITY(1, 1) PRIMARY KEY,
   date varchar(50) ,
   division varchar(15) DEFAULT NULL,
   tech varchar(70) DEFAULT NULL,

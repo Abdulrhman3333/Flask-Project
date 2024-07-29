@@ -12,7 +12,7 @@
 <body>
     
 <div class="container-fluid">
-<h1 class="text-center alert alert-danger">Intermediate page</h1>
+<h1 class="text-center alert alert-danger">Main page</h1>
         <div class="row">
             <div class="col-sm-2"></div>
 
@@ -34,8 +34,8 @@
 {%endwith%}
 
 
-<a href="{{ url_for('intermidiate')}}">
-    <button type="submit" class="btn btn-primary mb-2">intermidiate page</button>
+<a href="{{ url_for('intermediate')}}">
+    <button type="submit" class="btn btn-primary mb-2">intermediate page</button>
 </a>
 <a href="{{ url_for('rejected')}}">
     <button type="submit" class="btn btn-primary mb-2">Rejected page</button>
@@ -129,7 +129,7 @@
         <td>{{row.10}}</td>
         <td>
             <a href="/update/{{row.0}}" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#modaledit{{row.0}}">Edit</a>
-            <a href="/delete/{{ row.0 }}" onclick="return confirm('Are Sure Want To Deleted ?')" class="btn btn-danger btn-sm">Delete</a>
+            <a href="/delete/{{ row.0 }}" class="btn btn-danger btn-sm">Delete</a>
 
         </td>
     </tr>

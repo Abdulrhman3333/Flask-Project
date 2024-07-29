@@ -7,7 +7,7 @@ def connect_to_db():
         try:
             DRIVER_NAME = 'SQL SERVER'
             SERVER_NAME = 'LAPTOP-T6NQ8T6P\SQLEXPRESS'
-            DATABASE_NAME = 'aramco'
+            DATABASE_NAME = 'aramco1'
             connection_string = f"""
             DRIVER={{{DRIVER_NAME}}};
             SERVER={SERVER_NAME};
