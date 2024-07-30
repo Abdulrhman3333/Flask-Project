@@ -1,104 +1,58 @@
 from werkzeug.utils import redirect
+from flask_mysqldb import MySQL
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file, flash, make_response, Response 
-from datetime import datetime
+import secrets,pypyodbc,dbutil
+import datetime
 from db import connect_to_db
+
+
+##########################################
+# things need to be done:
+# change the db is_checked to status, and on the code
+#
+#
+##########################################
+
 
 
 app = Flask(__name__)
 # secret = secrets.token_urlsafe (32)
 secret = "abc"
+
 app.secret_key = secret
 
-# load the main page
+#############################################################
+# main page to show only the approved status
 @app.route('/')
 def Index():
     cur = connect_to_db()
-    cur.execute("SELECT * FROM rdc9")
+    cur.execute("SELECT * FROM rdc9 WHERE is_checked =?",('APPROVED',))
     data = cur.fetchall()
     cur.close()
     return render_template('index.html', rdcData=data)
 
-# powerBi visualizing responsive page with filters
-@app.route('/powerBi')
-def powerBi():
-    return render_template('powerBi.html')
-
-# chacking page to accept and reject requests
-@app.route('/intermidiate')
-def intermidiate():
-    cur = connect_to_db()
-    cur.execute("SELECT * FROM rdc9 WHERE is_checked='waiting'") # rdc9 table which has all the inforamtion
-    data = cur.fetchall() # get the data from database
-    cur.close()
-    return render_template('intermidiate.html', rdcData=data) # rdcData will be sent to frontend
-    
-# this insert data which come from the website ( add data )
-@app.route('/insert', methods = ['POST']) 
+# insert from the website manually
+@app.route('/insert', methods = ['POST']) # this insert which come from the website 
 def insert():
     if request.method == "POST":
-        current_date = datetime.now()
+        current_date = datetime.datetime.now()
         division = request.form['division']
         tech = request.form['tech']
         dep = request.form['dep']
         site = request.form['site']
-        month = datetime.now().strftime("%B")
-        year = datetime.now().year
+        month = datetime.datetime.now().strftime("%B")
+        year = datetime.datetime.now().year
         value = request.form['value']   
-        tpv = int(dep) * int(value) # calculate the total
-
+        tpv = int(dep) * int(value)
         cur = connect_to_db()
-        cur.execute('INSERT INTO aramco.dbo.rdc9 (date,division,tech,dep,site,month,year,is_checked,value,tpv) VALUES(?,?,?,?,?,?,?,?,?,?)',
-                    (current_date,division,tech,dep,site,month,year,'approved',value,tpv)) 
+        cur.execute('INSERT INTO rdc9 (date,division,tech,dep,site,month,year,is_checked,value,tpv) VALUES(?,?,?,?,?,?,?,?,?,?)',
+                    (current_date,division,tech,dep,site,month,year,'APPROVED',value,tpv)) 
         cur.commit()
         cur.close()
         flash("Data Inserted Successfully")
         return redirect(url_for('Index'))
-
-@app.route('/delete/<string:id_data>', methods = ['GET'])
-def delete(id_data):
-    print("dddddddddddddddddddddddddddddddddddddddddddddddd")
-    cur = connect_to_db()
-    cur.execute("UPDATE rdc9 SET is_checked='deleted' WHERE id = ?",[id_data])
-    cur.commit()
-    cur.close()
-    flash("Record Has Been Deleted Successfully")
-    return redirect(url_for('Index'))
-
-@app.route('/intermidiate/intermidiate/accept/<string:id_data>', methods = ['GET'])
-def accept(id_data):
-    print("sssssssssssssssssssssssssssssssssssssssss")
-    cur = connect_to_db()
-    cur.execute("UPDATE rdc9 SET is_checked=? WHERE id = ?",('approved',id_data))
-    cur.commit()
-    cur.close()
-    flash("Record Has Been accepted Successfully")
-    return redirect(url_for('intermidiate'))
-
-
-@app.route('/intermidiate/reject/<string:id_data>', methods = ['GET'])
-def reject(id_data):
-    print("sssssssssssssssssssssssssssssssssssssssss")
-    cur = connect_to_db()
-    cur.execute("UPDATE aramco.dbo.rdc9 SET is_checked=? WHERE id=?", ('rejected',id_data))
-    cur.commit()
-    cur.close()
-
-    flash("Record Has Been accepted Successfully")
-    return redirect(url_for('intermidiate'))
-
-
-@app.route('/rejected/', methods = ['GET'])
-def rejected():
-    cur = connect_to_db()
-    cur.execute("SELECT * FROM rdc9 WHERE is_checked = 'rejected' ")
-    data = cur.fetchall()
-    cur.close()
-    return render_template('rejected.html', rdcData=data)
-
-# @app.route('/intermidiate/retrieve/<string:id_data>', methods = ['GET'])
-# def retrieve(id_data):
-#     cur = connect_to_db()
-
+    
+# update from main page
 @app.route('/update', methods= ['POST', 'GET'])
 def update():
     if request.method == 'POST':
@@ -116,7 +70,7 @@ def update():
 
         cur = connect_to_db()
         try:
-            cur.execute("""UPDATE aramco.dbo.rdc9 SET division=?,tech=?, dep=?, site=?,month=?, year=?, is_checked=? , value=?, tpv=?  
+            cur.execute("""UPDATE rdc9 SET division=?,tech=?, dep=?, site=?,month=?, year=?, is_checked=? , value=?, tpv=?  
                     WHERE id=? """, (division,tech,dep,site,month,year,is_checked,value,tpv,id_data))
             cur.commit()
             cur.close()
@@ -125,8 +79,101 @@ def update():
             print("error")
 
         return redirect(url_for('Index'))
-    
 
+# delete from main page and will transfer it to rejected page, it will be as rejected
+@app.route('/delete/<string:id_data>', methods = ['GET'])
+def delete(id_data):
+    flash("Record Has Been Deleted Successfully")
+    cur = connect_to_db()
+    cur.execute("UPDATE rdc9 SET is_checked='REJECTED' WHERE id = ?",[id_data])
+    cur.commit()
+    cur.close()
+    return redirect(url_for('Index'))
+# main page to show only the approved status
+#############################################################
+
+
+#############################################################
+# intermediate route to accept and reject requests
+@app.route('/intermediate')
+def intermediate():
+    cur = connect_to_db()
+    cur.execute("SELECT * FROM rdc9 WHERE is_checked =?",('WAITING',)) # rdc9 table which has all the inforamtion
+    data = cur.fetchall() # get the data from database
+    cur.commit()
+    cur.close()
+    return render_template('intermediate.html', rdcData=data) # rdcData will be sent to frontend
+
+@app.route('/intermediate/accept/<string:id_data>', methods = ['GET'])
+def accept(id_data):
+    cur = connect_to_db()
+    cur.execute("UPDATE rdc9 SET is_checked='APPROVED' WHERE id = ?",[id_data])
+    cur.commit()
+    cur.close()
+    flash("Record Has Been accepted Successfully")
+    return redirect(url_for('intermediate'))
+
+@app.route('/intermediate/reject/<string:id_data>', methods = ['GET'])
+def reject(id_data):
+    cur = connect_to_db()
+    cur.execute("UPDATE rdc9 SET is_checked='REJECTED' WHERE id = ?",[id_data])
+    cur.commit()
+    cur.close()
+    flash("Record Has Been rejected Successfully")
+    # mysql.connection.commit()
+    return redirect(url_for('intermediate'))
+# intermediate route to accept and reject requests
+#############################################################
+
+    
+#############################################################
+# rejected route
+@app.route('/rejected/', methods = ['GET'])
+def rejected():
+    cur = connect_to_db()
+    cur.execute("SELECT * FROM rdc9 WHERE is_checked =?",('REJECTED',))
+    data = cur.fetchall()
+    cur.close()
+    return render_template('rejected.html', rdcData=data)
+
+@app.route('/rejected/restore/<string:id_data>', methods = ['GET'])
+def restore(id_data):
+    cur = connect_to_db()
+    cur.execute("UPDATE rdc9 SET is_checked='APPROVED' WHERE id = ?",[id_data])
+    cur.commit()
+    cur.close()
+    flash("Record Has Been rejected Successfully")
+    return redirect(url_for('rejected'))
+
+@app.route('/rejected/remove/<string:id_data>', methods = ['GET'])
+def remove(id_data):
+    cur = connect_to_db()
+    cur.execute("DELETE FROM rdc9 WHERE id = ?",[id_data])
+    cur.commit()
+    cur.close()
+    flash("Record Has Been rejected Successfully")
+    return redirect(url_for('rejected'))
+
+@app.route('/rejected/removeall', methods = ['GET'])
+def removeall():
+    cur = connect_to_db()
+    cur.execute("DELETE FROM rdc9 WHERE is_checked = ?",('REJECTED',))
+    cur.commit()
+    cur.close()
+    flash("All Records have Been removed forever Successfully")
+    return redirect(url_for('rejected'))
+
+# rejected route
+#############################################################
+
+
+
+
+
+
+
+##################################################
+# insert from pdf
 @app.route('/submit', methods = ['POST']) # this route is the only route coming from PDF, other routes related with the webiste itself
 def submit():
     if request.method == "POST": 
@@ -167,16 +214,25 @@ def submit():
             tech = i['tech']
             dep = i['dep']
             site = i['site']
-            month = datetime.now().strftime("%B")
-            year = datetime.now().year
-            current_date = datetime.now()
-            cur.execute('INSERT INTO aramco.dbo.rdc9 (date,division,tech,dep,site,month,year,is_checked,value,tpv) VALUES(?,?,?,?,?,?,?,?,?,?)',
-            (current_date,division,tech,dep,site,month,year,'waiting',0,0)) 
+            month = datetime.datetime.now().strftime("%B")
+            year = datetime.datetime.now().year
+            current_date = datetime.datetime.now()
+            cur.execute('INSERT INTO rdc9 (date,division,tech,dep,site,month,year,is_checked,value,tpv) VALUES(?,?,?,?,?,?,?,?,?,?)',
+            (current_date,division,tech,dep,site,month,year,'WAITING',0,0)) 
         cur.commit()    
         cur.close()
         flash("Data Inserted Successfully")
         return redirect(url_for('Index'))
+# insert from pdf
+###############################################
 
+##################################
+# power bi page
+@app.route('/powerBi')
+def powerBi():
+    return render_template('powerBi.html')
+# power bi page
+##################################
 
 
 if __name__ == "__main__":

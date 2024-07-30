@@ -1,0 +1,15 @@
+CREATE DATABASE aramco1
+
+CREATE TABLE rdc9 (
+  id int IDENTITY(1, 1) PRIMARY KEY,
+  date varchar(50) ,
+  division varchar(15) DEFAULT NULL,
+  tech varchar(70) DEFAULT NULL,
+  dep varchar(10) ,
+  site varchar(10) ,
+  month varchar(10) ,
+  year varchar(10) ,
+  is_checked varchar(10) ,
+  value int ,
+  tpv int 
+)
